@@ -3,243 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 디벗 정책 및 생태계 퀴즈</title>
+    <title>2026 디벗 정책 및 생태계 이해하기 퀴즈</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .option-btn {
-            transition: all 0.2s ease-in-out;
+        body { font-family: 'Pretendard', sans-serif; background-color: #f3f4f6; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .option-btn:hover {
-            transform: translateY(-2px);
-        }
-        .selected {
-            background-color: #3b82f6 !important; /* text-blue-500 */
-            color: white !important;
-            border-color: #3b82f6 !important;
-        }
-        .correct {
-            background-color: #10b981 !important; /* text-green-500 */
-            color: white !important;
-            border-color: #10b981 !important;
-        }
-        .incorrect {
-            background-color: #ef4444 !important; /* text-red-500 */
-            color: white !important;
-            border-color: #ef4444 !important;
-        }
+        .option-btn { transition: all 0.2s ease; }
+        .option-btn:hover:not(:disabled) { background-color: #e5e7eb; border-color: #3b82f6; }
+        .option-btn.selected { background-color: #bfdbfe; border-color: #3b82f6; }
+        .option-btn.correct { background-color: #bbf7d0; border-color: #22c55e; color: #166534; }
+        .option-btn.wrong { background-color: #fecaca; border-color: #ef4444; color: #991b1b; }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex items-center justify-center p-4">
 
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden">
-        <!-- Header -->
-        <div class="bg-blue-600 p-6 text-white text-center">
-            <h1 class="text-2xl font-bold">📚 2026 디벗 정책 이해하기 퀴즈</h1>
-            <p class="mt-2 text-blue-100 text-sm">서울공연초등학교 연수 자료 기반</p>
+    <div id="app" class="bg-white rounded-2xl shadow-xl w-full max-w-3xl p-6 md:p-10 fade-in">
+        <!-- 시작 화면 -->
+        <div id="start-screen" class="text-center">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">2026 디벗 정책 마스터 퀴즈</h1>
+            <p class="text-gray-600 mb-8">총 20문제 / 만점 100점 (각 5점)<br>제공된 정책 문서를 바탕으로 출제되었습니다.</p>
+            <button onclick="startQuiz()" class="bg-blue-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-blue-700 transition transform hover:scale-105">
+                퀴즈 시작하기
+            </button>
         </div>
 
-        <!-- 메인 콘텐츠 영역 -->
-        <div class="p-6 md:p-8 min-h-[400px] flex flex-col relative">
-            
-            <!-- 시작 화면 -->
-            <div id="start-screen" class="flex flex-col items-center justify-center flex-grow text-center">
-                <div class="text-6xl mb-4">📱</div>
-                <h2 class="text-xl font-semibold mb-4">디벗 정책에 대해 얼마나 알고 계신가요?</h2>
-                <p class="text-slate-500 mb-8 max-w-md">이 퀴즈는 디벗 기기의 의미, 운영 방식, 수리/분실 대처법 및 유해 사이트 차단 정책 등을 다룹니다.</p>
-                <button onclick="startQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-colors">
-                    퀴즈 시작하기
-                </button>
-            </div>
-
-            <!-- 퀴즈 화면 -->
-            <div id="quiz-screen" class="hidden flex-col flex-grow">
-                <div class="flex justify-between items-center mb-6">
-                    <span id="question-counter" class="text-sm font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded-full">문제 1 / 5</span>
-                    <span id="score-display" class="text-sm font-bold text-slate-500">점수: 0</span>
-                </div>
-                
-                <h2 id="question-text" class="text-xl font-bold mb-6 leading-relaxed">질문이 여기에 표시됩니다.</h2>
-                
-                <div id="options-container" class="space-y-3 mb-8">
-                    <!-- 옵션 버튼들이 여기에 동적으로 생성됩니다. -->
-                </div>
-
-                <div id="feedback-container" class="hidden mb-6 p-4 rounded-lg bg-slate-50 border border-slate-200">
-                    <p id="feedback-text" class="text-sm font-medium"></p>
-                </div>
-
-                <div class="mt-auto flex justify-end">
-                    <button id="next-btn" onclick="nextQuestion()" class="hidden bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 px-6 rounded-lg transition-colors">
-                        다음 문제 ➔
-                    </button>
-                </div>
-            </div>
-
-            <!-- 결과 화면 -->
-            <div id="result-screen" class="hidden flex-col items-center justify-center flex-grow text-center">
-                <div id="result-emoji" class="text-6xl mb-4">🎉</div>
-                <h2 class="text-2xl font-bold mb-2">퀴즈 완료!</h2>
-                <p class="text-lg text-slate-600 mb-6">총 5문제 중 <span id="final-score" class="font-bold text-blue-600 text-xl">3</span>문제를 맞혔습니다.</p>
-                
-                <div id="result-message" class="mb-8 p-4 bg-blue-50 text-blue-800 rounded-lg max-w-md">
-                    메시지
-                </div>
-
-                <button onclick="resetQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-colors">
-                    다시 풀기 ↺
-                </button>
+        <!-- 퀴즈 화면 -->
+        <div id="quiz-screen" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <span id="question-counter" class="text-blue-600 font-bold bg-blue-100 px-3 py-1 rounded-full text-sm">Question 1 / 20</span>
+                <span id="score-display" class="text-gray-600 font-semibold text-sm">점수: 0</span>
             </div>
             
+            <h2 id="question-text" class="text-xl md:text-2xl font-bold text-gray-800 mb-6 leading-relaxed"></h2>
+            
+            <div id="options-container" class="space-y-3 mb-6">
+                <!-- 옵션 버튼들이 여기에 동적으로 생성됩니다. -->
+            </div>
+
+            <div id="explanation-container" class="hidden bg-gray-50 border-l-4 border-blue-500 p-4 rounded mb-6">
+                <p id="explanation-text" class="text-gray-700 text-sm"></p>
+            </div>
+
+            <div class="text-right">
+                <button id="next-btn" onclick="nextQuestion()" class="hidden bg-gray-800 text-white font-semibold py-2 px-6 rounded-lg hover:bg-gray-900 transition" disabled>
+                    다음 문제
+                </button>
+            </div>
+        </div>
+
+        <!-- 결과 화면 -->
+        <div id="result-screen" class="hidden text-center fade-in">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">퀴즈 완료!</h2>
+            <div class="text-6xl font-black text-blue-600 mb-4" id="final-score">100점</div>
+            <p id="result-message" class="text-lg text-gray-600 mb-8"></p>
+            
+            <div class="flex justify-center space-x-4">
+                <button onclick="location.reload()" class="bg-blue-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-blue-700 transition">
+                    다시 풀기
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
         const quizData = [
             {
-                question: "'디벗'이라는 이름의 의미로 가장 알맞은 것은 무엇인가요?",
-                options: [
-                    "Digital + 버릇 (올바른 디지털 사용 습관)",
-                    "Device + 버전 (최신 기기 활용)",
-                    "Digital + 벗 (디지털 기기는 나의 디지털 학습 친구)",
-                    "Digital + 버튼 (디지털 기기 조작 능력)"
-                ],
-                correctAnswer: 2,
-                explanation: "디벗은 'Digital + 벗'의 줄임말로, '디지털 기기는 나의 디지털 학습 친구'라는 의미를 담고 있습니다."
+                question: "1. '디벗'이라는 명칭의 올바른 의미는 무엇인가요?",
+                options: ["Digital + 벗 (디지털 기기는 나의 디지털 학습 친구)", "디지털 버스 (디지털로 향하는 빠른 길)", "Digital + Button (디지털 버튼)", "디지털 시대의 새로운 법"],
+                answer: 0,
+                explanation: "'디벗'은 'Digital + 벗'의 줄임말로, '디지털 기기는 나의 디지털 학습 친구'라는 의미를 담고 있습니다.[cite: 1]"
             },
             {
-                question: "초등학교의 디벗 기기 보관 및 운영 방식에 대한 설명으로 올바른 것은 무엇인가요?",
-                options: [
-                    "매일 기기를 가정으로 가져가서 직접 충전해야 한다.",
-                    "기기를 교실 충전함에 보관하며, 지정 대여받아 졸업할 때까지 사용 후 반납한다.",
-                    "매년 학년이 바뀔 때마다 새로운 기기로 교체하여 대여받는다.",
-                    "초등학교 졸업 후에는 학생 개인 소유로 완전히 귀속된다."
-                ],
-                correctAnswer: 1,
-                explanation: "초등학교는 기기를 교실 충전함에 보관하고 활용하는 것이 기본이며, 지정 대여받은 기기를 졸업할 때까지 사용하고 반납합니다."
+                question: "2. 디벗 정책의 추진 방향으로 옳지 않은 것은?",
+                options: ["안전한 학습도구 제공", "인프라 통합 솔루션 구축", "교원 업무 부담 극대화", "교원 역량 강화 지원"],
+                answer: 2,
+                explanation: "디벗 정책은 교원의 업무 부담을 최소화하는 것을 주요 추진 방향 중 하나로 삼고 있습니다.[cite: 1]"
             },
             {
-                question: "학생의 개인 과실로 인해 디벗 기기가 고장나거나 파손되었을 때(일반 학생 기준) 수리비 부담 방식은?",
-                options: [
-                    "수리비의 20%만 부담한다 (최대 4만원을 초과하지 않음).",
-                    "파손 즉시 학생이 전액(100%)을 배상해야 한다.",
-                    "교육청에서 무조건 100% 무상으로 수리해 준다.",
-                    "고장 발생 시 즉시 새 기기로 본인 부담 없이 교체한다."
-                ],
-                correctAnswer: 0,
-                explanation: "개인 과실 수리 시 수리비의 20%(최대 4만원 이하)만 개인이 부담하며, 취약계층은 재학 중 1회에 한해 무상 지원됩니다."
+                question: "3. 초등학교 디벗 기기의 기본 보관 원칙은 무엇인가요?",
+                options: ["학생이 가정으로 매일 가져간다.", "교무실에 일괄 보관한다.", "교실에 마련된 충전함에 보관한다.", "지역 서비스 센터에 보관한다."],
+                answer: 2,
+                explanation: "초등학교는 기기를 교실에 보관하고 활용하는 것이 기본 정책으로 모든 학급에 충전함이 보급됩니다.[cite: 1]"
             },
             {
-                question: "디벗 기기를 분실했을 경우의 처리 절차와 책임으로 올바른 것은?",
-                options: [
-                    "학교에서 남은 학기 동안 공용 기기를 무상으로 대여해준다.",
-                    "기기 중고거래 방지를 위해 분실 시 학생 부담으로 재구매해야 한다.",
-                    "졸업할 때까지 다른 친구의 기기를 함께 사용하도록 지도한다.",
-                    "경찰에 신고만 하면 교육청에서 새 기기를 지급한다."
-                ],
-                correctAnswer: 1,
-                explanation: "기기 분실 시 콜센터 등을 통해 위치를 확인하며, 최종 분실 확정 시 중고거래 방지를 위해 학생 부담으로 재구매(일반 10% 할인, 취약계층 50% 할인)해야 합니다."
+                question: "4. 학생에게 지급된 디벗 기기의 사용 연한(사용 기간)은 몇 년인가요?",
+                options: ["3년", "4년", "5년", "6년"],
+                answer: 3,
+                explanation: "디벗 기기의 사용 기간은 조달청 고시 내용 연수에 따라 6년입니다.[cite: 1]"
             },
             {
-                question: "디벗 기기의 유해 사이트 및 앱 차단 관리에 대한 설명으로 가장 적절한 것은?",
-                options: [
-                    "가정에서 사용할 때만 학부모가 직접 차단 앱을 설치해 관리해야 한다.",
-                    "학생 스스로의 자율성을 위해 어떠한 사이트 차단도 하지 않는다.",
-                    "교육청 일괄 관리만 가능하며, 학교 단위에서의 추가 차단은 불가능하다.",
-                    "학교 스쿨넷 등을 통해 기본 차단되며, MDM으로 학교별 추가 차단이 가능하다."
-                ],
-                correctAnswer: 3,
-                explanation: "기본적으로 학교 스쿨넷과 방통위 실시간 DB를 통해 유해 사이트가 차단되며, 학교에서 원할 경우 MDM 정책을 통해 추가로 차단할 수 있습니다."
+                question: "5. 사용자 과실로 기기 파손 시, 개인(학부모)이 부담해야 하는 수리비의 최대 상한액은 얼마인가요?",
+                options: ["10,000원", "20,000원", "40,000원", "100,000원"],
+                answer: 2,
+                explanation: "사용자 과실 시 수리비의 20%만 부담하며, 최대 40,000원을 초과하지 않습니다. (교육청 80% 지원)[cite: 1]"
+            },
+            {
+                question: "6. 사용자 과실 수리 시 취약계층(저소득층 등) 학생을 위한 지원 혜택은 무엇인가요?",
+                options: ["할인 혜택 없음", "수리비 50% 할인", "재학 중 1회 무상 지원", "횟수 제한 없이 전액 무상 지원"],
+                answer: 2,
+                explanation: "취약계층의 경우 재학 중 1회에 한해 기기 고장·파손 시 학생 부담금을 무상으로 지원합니다.[cite: 1]"
+            },
+            {
+                question: "7. 디벗 기기를 분실했을 때 기기 중고거래 방지를 위해 어떻게 조치해야 하나요?",
+                options: ["학교에서 새 기기를 무상으로 대여해준다.", "본인 부담으로 재구매해야 한다.", "수리비 4만원만 내면 새 기기를 준다.", "졸업할 때까지 기기 없이 생활한다."],
+                answer: 1,
+                explanation: "기기 분실 시 중고거래 방지를 위해 학생 부담으로 재구매해야 합니다. (일반 10%, 취약계층 50% 할인)[cite: 1]"
+            },
+            {
+                question: "8. 학교에 설치되어 있으며, 고장 난 디벗의 수리 접수와 수령을 편리하게 할 수 있는 시설은?",
+                options: ["디벗 무인보관함(무인수거함)", "스마트 충전함", "테크센터", "통합 로그인 센터"],
+                answer: 0,
+                explanation: "학교에 설치된 무인보관함에 제품을 넣어 서비스 접수를 하고, 수리된 기기를 다시 무인보관함에서 받을 수 있습니다.[cite: 1]"
+            },
+            {
+                question: "9. 디벗 기기 분실 시 가장 먼저 확인해야 하는 절차는 무엇인가요?",
+                options: ["새 기기 구매하기", "경찰청 분실 등록", "콜센터 등을 통한 기기 위치 확인", "학급 친구들 가방 검사하기"],
+                answer: 2,
+                explanation: "분실 접수 후 가장 먼저 콜센터 및 관리 시스템(MDM)을 통해 '기기 위치 확인'을 진행합니다.[cite: 1]"
+            },
+            {
+                question: "10. 학교 및 가정 인근에서 직접 수리를 접수할 수 있는 서울 전역의 지역 서비스 센터는 총 몇 개인가요?",
+                options: ["10개", "25개", "41개", "100개"],
+                answer: 2,
+                explanation: "서울 전역에 41개 지점의 지역 서비스 센터가 마련되어 있습니다.[cite: 1]"
+            },
+            {
+                question: "11. 학교에서 학생들의 기기를 일괄적으로 관리하고, 유해 사이트 추가 차단 등의 설정을 할 수 있는 시스템(관제도구)은?",
+                options: ["SSID", "MDM (기기관리SW)", "스마트 단말 에이전트", "PoE 스위치"],
+                answer: 1,
+                explanation: "MDM(Mobile Device Management)은 기기 관리, 앱 일괄 설치, 유해 사이트 블랙리스트 추가 차단 등을 수행하는 시스템입니다.[cite: 1]"
+            },
+            {
+                question: "12. 디벗 운영체제(OS)로 현재 지원되지 않는 것은?",
+                options: ["Android", "Linux", "Chrome OS", "Whale OS"],
+                answer: 1,
+                explanation: "디벗 OS별 기기는 Chrome, Android, iPadOS, Windows, Whale로 제공됩니다.[cite: 1]"
+            },
+            {
+                question: "13. 교실 내에서 디벗 기기의 무선 네트워크(WiFi) 속도 저하 및 끊김 현상을 막기 위해 권장되는 주파수 대역은?",
+                options: ["2.4GHz", "5GHz", "6GHz", "상관없음"],
+                answer: 1,
+                explanation: "블루투스, 무선 마우스 등 대다수가 2.4GHz를 사용하여 간섭이 발생하므로, 교실에서는 5GHz 사용이 권장됩니다.[cite: 1]"
+            },
+            {
+                question: "14. 디벗 기기 배부 시 액세서리 분실 및 섞임 방지를 위해 가장 먼저 진행해야 하는 작업은?",
+                options: ["파워워시", "SSID 비밀번호 변경", "기기 및 액세서리(펜, 키보드) 라벨링", "배터리 방전시키기"],
+                answer: 2,
+                explanation: "스타일러스 펜, 키보드, 충전기 등은 분실이나 뒤바뀜이 빈번하므로 배포 준비 시 라벨링을 먼저 해야 합니다.[cite: 1]"
+            },
+            {
+                question: "15. 기기 배부 전 학생 계정 생성 및 관리를 위해 학부모로부터 반드시 수합해야 하는 문서는?",
+                options: ["건강기록부", "개인정보 수집·이용 동의서", "네트워크 사용 서약서", "분실 재구매 서약서"],
+                answer: 1,
+                explanation: "디벗 기기 배부 절차 중 '개인정보 수집·이용 동의'를 수합하여 보관해야 학생 계정을 생성하고 단말 이름을 설정할 수 있습니다.[cite: 1]"
+            },
+            {
+                question: "16. 디벗 활용 가이드라인의 '수업' 영역 규칙으로 올바른 것은?",
+                options: ["수업과 관련 없는 사이트도 자유롭게 접속한다.", "선생님의 지도에 따라 기기를 사용한다.", "모르는 것이 있어도 질문하지 않는다.", "충전함에 충전선을 연결하지 않고 보관한다."],
+                answer: 1,
+                explanation: "수업 가이드라인에 따르면 '선생님의 지도에 따라 기기를 사용해요', '수업과 관련 없는 사이트에 접속하지 않아요' 등의 규칙이 있습니다.[cite: 1]"
+            },
+            {
+                question: "17. 교원의 디지털 역량 강화를 위해 발급하며, '데이터 과학', '인공지능 윤리' 등의 분야로 나뉘어 있는 것은?",
+                options: ["디지털 배지", "디지털 라이선스", "에듀테크 자격증", "AI 선도교사증"],
+                answer: 0,
+                explanation: "교원역량강화를 위해 디지털 이해, 데이터 과학, 인공지능 윤리 등 다양한 분야의 '디지털 배지'를 발급합니다.[cite: 1]"
+            },
+            {
+                question: "18. 디지털 기반 교육의 학생상(AI 인재)의 세부 역량이 아닌 것은?",
+                options: ["주도적 학습 역량", "수리·컴퓨팅 사고 역량", "인프라 통합 관리 역량", "인간 중심 문제 해결 역량"],
+                answer: 2,
+                explanation: "인프라 통합 관리는 정책 추진 방향에 해당하며, 학생상 역량에는 자기 주도 학습, 컴퓨팅 사고력, 인공지능 윤리 역량 등이 포함됩니다.[cite: 1]"
+            },
+            {
+                question: "19. 무선 AP간의 신호 간섭을 방지하고 특정 교실로 접속이 몰리는 것을 막기 위해 권장되는 무선AP 신호 세기는?",
+                options: ["30~40%", "50~60%", "80~90%", "100% 최대로 설정"],
+                answer: 2,
+                explanation: "해당 교실의 무선AP만 잡을 수 있도록 신호 세기를 80~90%로 낮추어 접속 병목 현상을 방지하는 것이 권장됩니다.[cite: 1]"
+            },
+            {
+                question: "20. 학생이 가정에서 개인 스마트폰을 사용할 때와 비교하여 디벗(학교 기기)을 사용할 때의 장점으로 올바른 것은?",
+                options: ["유해사이트에 무분별하게 접근할 수 있다.", "게임 앱을 자유롭게 설치할 수 있다.", "학생이 기기 관리를 전적으로 책임져야 한다.", "학교 차원의 일괄 안전조치로 학습 도구로 안전하게 활용된다."],
+                answer: 3,
+                explanation: "개인 스마트폰과 달리 디벗은 교육청과 학교에서 일괄 안전조치(유해사이트 차단 등)를 하여 안전한 학습 도구로 활용됩니다.[cite: 1]"
             }
         ];
 
         let currentQuestion = 0;
         let score = 0;
-        let isAnswered = false;
+        const totalScore = 100;
+        const pointsPerQuestion = 5;
 
         const startScreen = document.getElementById('start-screen');
         const quizScreen = document.getElementById('quiz-screen');
         const resultScreen = document.getElementById('result-screen');
         
-        const questionText = document.getElementById('question-text');
-        const optionsContainer = document.getElementById('options-container');
-        const questionCounter = document.getElementById('question-counter');
-        const scoreDisplay = document.getElementById('score-display');
-        const nextBtn = document.getElementById('next-btn');
-        const feedbackContainer = document.getElementById('feedback-container');
-        const feedbackText = document.getElementById('feedback-text');
-
         function startQuiz() {
             startScreen.classList.add('hidden');
             quizScreen.classList.remove('hidden');
-            quizScreen.classList.add('flex');
             loadQuestion();
         }
 
         function loadQuestion() {
-            isAnswered = false;
-            nextBtn.classList.add('hidden');
-            feedbackContainer.classList.add('hidden');
+            const questionData = quizData[currentQuestion];
+            document.getElementById('question-counter').innerText = `Question ${currentQuestion + 1} / ${quizData.length}`;
+            document.getElementById('score-display').innerText = `현재 점수: ${score}점`;
+            document.getElementById('question-text').innerText = questionData.question;
             
-            const currentQuizData = quizData[currentQuestion];
-            questionText.innerText = currentQuizData.question;
-            questionCounter.innerText = `문제 ${currentQuestion + 1} / ${quizData.length}`;
-            scoreDisplay.innerText = `점수: ${score}`;
-            
+            const optionsContainer = document.getElementById('options-container');
             optionsContainer.innerHTML = '';
             
-            currentQuizData.options.forEach((option, index) => {
-                const button = document.createElement('button');
-                button.innerText = option;
-                button.className = 'option-btn w-full text-left p-4 rounded-xl border-2 border-slate-200 bg-white hover:bg-slate-50 font-medium text-slate-700 focus:outline-none';
-                button.onclick = () => selectOption(index, button);
-                optionsContainer.appendChild(button);
+            questionData.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn w-full text-left p-4 rounded-xl border-2 border-gray-200 font-medium text-gray-700 bg-white';
+                btn.innerText = option;
+                btn.onclick = () => selectOption(index, btn);
+                optionsContainer.appendChild(btn);
             });
+
+            document.getElementById('explanation-container').classList.add('hidden');
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.classList.add('hidden');
+            nextBtn.disabled = true;
         }
 
-        function selectOption(selectedIndex, selectedButton) {
-            if (isAnswered) return;
-            isAnswered = true;
-
-            const currentQuizData = quizData[currentQuestion];
-            const allButtons = optionsContainer.children;
-
-            // 모든 버튼 비활성화
-            for(let i=0; i<allButtons.length; i++) {
-                allButtons[i].disabled = true;
-                allButtons[i].classList.add('opacity-75');
-            }
-
-            // 정답 체크
-            if (selectedIndex === currentQuizData.correctAnswer) {
-                selectedButton.classList.add('correct');
-                selectedButton.classList.remove('opacity-75');
-                score++;
-                showFeedback(true, currentQuizData.explanation);
-            } else {
-                selectedButton.classList.add('incorrect');
-                selectedButton.classList.remove('opacity-75');
-                
-                // 정답 표시
-                allButtons[currentQuizData.correctAnswer].classList.add('correct');
-                allButtons[currentQuizData.correctAnswer].classList.remove('opacity-75');
-                showFeedback(false, currentQuizData.explanation);
-            }
-
-            scoreDisplay.innerText = `점수: ${score}`;
-            nextBtn.classList.remove('hidden');
-        }
-
-        function showFeedback(isCorrect, explanation) {
-            feedbackContainer.classList.remove('hidden');
-            feedbackContainer.classList.remove('bg-green-50', 'bg-red-50', 'border-green-200', 'border-red-200');
+        function selectOption(selectedIndex, selectedBtn) {
+            const questionData = quizData[currentQuestion];
+            const options = document.querySelectorAll('.option-btn');
             
-            if(isCorrect) {
-                feedbackContainer.classList.add('bg-green-50', 'border-green-200');
-                feedbackText.innerHTML = `<span class="text-green-700 font-bold">✅ 정답입니다!</span><br><span class="text-slate-600 mt-1 block">${explanation}</span>`;
+            // 모든 버튼 비활성화
+            options.forEach(btn => btn.disabled = true);
+            
+            // 정답 체크
+            if (selectedIndex === questionData.answer) {
+                selectedBtn.classList.add('correct');
+                score += pointsPerQuestion;
+                document.getElementById('score-display').innerText = `현재 점수: ${score}점`;
             } else {
-                feedbackContainer.classList.add('bg-red-50', 'border-red-200');
-                feedbackText.innerHTML = `<span class="text-red-700 font-bold">❌ 오답입니다.</span><br><span class="text-slate-600 mt-1 block">${explanation}</span>`;
+                selectedBtn.classList.add('wrong');
+                options[questionData.answer].classList.add('correct');
             }
+
+            // 해설 표시
+            const expContainer = document.getElementById('explanation-container');
+            const expText = document.getElementById('explanation-text');
+            expText.innerText = questionData.explanation;
+            expContainer.classList.remove('hidden');
+            expContainer.classList.add('fade-in');
+
+            // 다음 버튼 활성화
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.classList.remove('hidden');
+            nextBtn.disabled = false;
         }
 
         function nextQuestion() {
@@ -247,43 +266,23 @@
             if (currentQuestion < quizData.length) {
                 loadQuestion();
             } else {
-                showResults();
+                showResult();
             }
         }
 
-        function showResults() {
-            quizScreen.classList.remove('flex');
+        function showResult() {
             quizScreen.classList.add('hidden');
             resultScreen.classList.remove('hidden');
-            resultScreen.classList.add('flex');
-
-            document.getElementById('final-score').innerText = score;
             
-            const messageEl = document.getElementById('result-message');
-            const emojiEl = document.getElementById('result-emoji');
+            document.getElementById('final-score').innerText = `${score}점`;
             
-            if (score === quizData.length) {
-                emojiEl.innerText = '🏆';
-                messageEl.innerHTML = '<strong>완벽합니다!</strong><br>디벗 정책과 생태계를 완벽하게 이해하고 계시네요!';
-                messageEl.className = 'mb-8 p-4 bg-green-50 text-green-800 rounded-lg max-w-md';
-            } else if (score >= 3) {
-                emojiEl.innerText = '👍';
-                messageEl.innerHTML = '<strong>잘하셨어요!</strong><br>전반적인 디벗 정책을 잘 숙지하고 있습니다.';
-                messageEl.className = 'mb-8 p-4 bg-blue-50 text-blue-800 rounded-lg max-w-md';
-            } else {
-                emojiEl.innerText = '📖';
-                messageEl.innerHTML = '<strong>조금 더 확인이 필요해요.</strong><br>자료를 다시 한번 읽어보시면 큰 도움이 될 거예요.';
-                messageEl.className = 'mb-8 p-4 bg-orange-50 text-orange-800 rounded-lg max-w-md';
-            }
-        }
-
-        function resetQuiz() {
-            currentQuestion = 0;
-            score = 0;
-            resultScreen.classList.remove('flex');
-            resultScreen.classList.add('hidden');
-            startScreen.classList.remove('hidden');
-            startScreen.classList.add('flex');
+            let message = "";
+            if (score === 100) message = "완벽합니다! 디벗 정책 마스터이십니다. 🎉";
+            else if (score >= 80) message = "훌륭합니다! 디벗 정책에 대해 아주 잘 알고 계시네요. 👍";
+            else if (score >= 60) message = "좋습니다. 조금만 더 복습하면 완벽해질 거예요! 😊";
+            else message = "문서를 다시 한번 천천히 읽어보시면 도움이 될 거예요! 💪";
+            
+            document.getElementById('result-message').innerText = message;
         }
     </script>
 </body>
